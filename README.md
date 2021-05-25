@@ -1,3 +1,5 @@
+This project uses [Kimbatt's Deterministic Physics Code](https://github.com/Kimbatt/unity-deterministic-physics) 
+
 # Getting Started
 - Open the root folder as a Unity Project
 
