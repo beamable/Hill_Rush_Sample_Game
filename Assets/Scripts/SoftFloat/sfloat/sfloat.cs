@@ -28,6 +28,7 @@ using System.Runtime.CompilerServices;
 
 // Internal representation is identical to IEEE binary32 floating point numbers
 [DebuggerDisplay("{ToStringInv()}")]
+[Serializable]
 public struct sfloat : IEquatable<sfloat>, IComparable<sfloat>, IComparable, IFormattable
 {
     /// <summary>

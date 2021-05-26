@@ -9,10 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebf776d7c945048daab1e231d27dcdeb, type: 3}
-  m_Name: default
+  m_Script: {fileID: 11500000, guid: 31d5f9446db4a4d959164d4932c2e5b9, type: 3}
+  m_Name: TournamentsConfiguration
   m_EditorClassIdentifier: 
-  _tags:
-  - base
-  permissions:
-    writeSelf: 0
+  Info: []
