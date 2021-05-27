@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Core;
 using Unity.Entities;
 using UnityEngine;
 using UnityS.Mathematics;
@@ -18,25 +19,37 @@ namespace Simulation
    public static class SharedInputData {
       public static readonly Dictionary<Entity, MoveForceData> _entityMoveTable = new Dictionary<Entity, MoveForceData>();
 
-      public static sfloat timestep = (sfloat.One / (sfloat) 20.0f);
-
       public static void SetMove(Entity e, MoveForceData data)
       {
          _entityMoveTable[e] = data;
       }
+
+
+
+
    }
 
+
    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-   [UpdateAfter(typeof(ExportPhysicsWorld))]
+   // [UpdateAfter(typeof(ExportPhysicsWorld))]
    public class InputSystem : SystemBase
    {
       protected override void OnUpdate()
       {
          // The time
-         World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = (float)SharedInputData.timestep;
+         // World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = (float)SharedInputData.timestep;
 
 
-         var timeDelta = (sfloat)Time.DeltaTime;
+         // we can't consume inputs when the time period might be skipped...
+
+         var timeDelta = (sfloat)World.Time.DeltaTime;
+         if (timeDelta > (sfloat)(1/20f))
+         {
+            Debug.Log("Input Warning!!! The time delta is greater than one network sim step!");
+         }
+
+         // Debug.Log("Input System: " + World.Time.DeltaTime);
+
          var moveTable = SharedInputData._entityMoveTable;
          Entities.WithoutBurst().ForEach((Entity e, ref PhysicsVelocity vel, ref PhysicsMass mass, ref MoveForceData move) =>
          {
@@ -61,7 +74,7 @@ namespace Simulation
             if (linearVelocityMag > (sfloat).01f)
             {
                var normalizedLinearVelocity = vel.Linear / linearVelocityMag;
-               vel.Linear = normalizedLinearVelocity * math.min(linearVelocityMag, (sfloat)3);
+               vel.Linear = normalizedLinearVelocity * math.min(linearVelocityMag, (sfloat)5);
             }
 
          }).Run();

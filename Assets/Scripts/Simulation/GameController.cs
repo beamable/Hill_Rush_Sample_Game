@@ -29,7 +29,15 @@ namespace Simulation
             matPropBlock = new MaterialPropertyBlock();
 
             // setup physics parameters
-            World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = (float) (sfloat.One / (sfloat) 60.0f);
+            var systemGroup = World.GetOrCreateSystem<FixedStepSimulationSystemGroup>();
+            systemGroup.Timestep = (float) (sfloat.One / (sfloat) 60.0f);
+            systemGroup.World.MaximumDeltaTime = 100000;
+            var timeSystem = World.GetExistingSystem<UpdateWorldTimeSystem>();
+            World.DestroySystem(timeSystem); // don't allow time to ever move forward.
+
+            // var fixedRateManager = new FixedRateUtils.FixedRateCatchUpManager()
+           var fixedRateManager = new MyFixedRateCatchUpManager(systemGroup.Timestep);
+            systemGroup.FixedRateManager = fixedRateManager;
             Entity physicsStep = EntityManager.CreateEntity(typeof(PhysicsStep));
             PhysicsStep physicsStepParams = PhysicsStep.Default;
             physicsStepParams.SolverStabilizationHeuristicSettings = new Solver.StabilizationHeuristicSettings
@@ -57,6 +65,17 @@ namespace Simulation
             CreateBoxColliderObject(ResourceManager.Instance.CubePrefab, new float3(sfloat.Zero, sfloat.Zero, sfloat.Zero),
                 new float3((sfloat) 500.0f, (sfloat) 2.0f, (sfloat) 500.0f), quaternion.identity, material,
                 physicsParamsStatic);
+
+            for (var i = 0f; i < 70; i++)
+            {
+
+                var (renderer, entity) = CreateBoxColliderObject(ResourceManager.Instance.CubePrefab,
+                    new float3((sfloat)(-4 + i*.11f), (sfloat) (4 + (i*6)), (sfloat)4),
+                    new float3(sfloat.One, sfloat.One, sfloat.One), quaternion.identity, material,
+                    physicsParamsDynamic);
+                renderer.material = ResourceManager.Instance.colorMaterials[((int)i)%ResourceManager.Instance.colorMaterials.Length];
+
+            }
         }
 
 

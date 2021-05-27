@@ -10,17 +10,23 @@ namespace Simulation
       public PlayerInput PlayerInput;
       public NetworkController NetworkController;
 
-      private PlayerFrameState _nextState = new PlayerFrameState();
+      public bool needsToSendInput;
+      public long lastSeenTick;
 
       void Start()
       {
-         StartCoroutine(ConstantlyReportInput());
+         PlayerInput.OnInputChanged += input =>
+         {
+            needsToSendInput = true;
+
+         };
+         // StartCoroutine(ConstantlyReportInput());
          // NetworkController.SimClient.OnTick(tickNumber =>
          // {
          //    // broadcast message about player state...
          //    NetworkController.SendMessage(new Message
          //    {
-         //       Tick = tickNumber,
+         //       // Tick = tickNumber,
          //       IsWalking = _nextState.IsWalking,
          //       DirectionX = _nextState.Direction.x.RawValue,
          //       DirectionY = _nextState.Direction.y.RawValue,
@@ -28,27 +34,26 @@ namespace Simulation
          // });
       }
 
-      public void Update()
+      private void Update()
       {
-         _nextState.Direction = PlayerInput.Direction;
-         _nextState.IsWalking = PlayerInput.IsWalking;
-
-
-      }
-
-      IEnumerator ConstantlyReportInput()
-      {
-         while (true)
+         var currTick = SimFixedRateManager.HighestSeenNetworkTick;
+         if (currTick != lastSeenTick)
          {
-            yield return new WaitForSecondsRealtime(1f / NetworkController.framesPerSecond);
-            // TODO: Schedule this on the "next tick" ?
-            NetworkController.SendMessage(new Message
+            if (needsToSendInput)
             {
-               IsWalking = _nextState.IsWalking,
-               DirectionX = _nextState.Direction.x.RawValue,
-               DirectionY = _nextState.Direction.y.RawValue,
-            });
+               needsToSendInput = false;
+               var input = PlayerInput;
+               Debug.Log("Sending Player Input Change " + input.IsWalking + " " + input.Direction.x + " | " + input.Direction.y);
+               NetworkController.SendMessage(new Message
+               {
+                  IsWalking = input.IsWalking,
+                  DirectionX = ((sfloat)input.Direction.x).RawValue,
+                  DirectionY = ((sfloat)input.Direction.y).RawValue,
+               });
+            }
          }
+
+         lastSeenTick = currTick;
       }
    }
 }

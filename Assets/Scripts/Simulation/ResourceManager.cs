@@ -6,6 +6,11 @@ namespace Simulation
    {
       public Material defaultMaterial;
       public MeshRenderer CubePrefab;
+
+      public Material[] colorMaterials;
+
+      public Material RealRandomMaterial => colorMaterials[Random.Range(0, colorMaterials.Length)];
+
       public int seed;
 
       private static ResourceManager _instance;

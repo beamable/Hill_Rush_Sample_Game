@@ -19,4 +19,13 @@ namespace Simulation
 
       }
    }
+
+   public class TickMessage : Message
+   {
+      public long Tick;
+      public TickMessage(long tick)
+      {
+         Tick = tick;
+      }
+   }
 }
