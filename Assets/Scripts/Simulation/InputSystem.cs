@@ -31,6 +31,7 @@ namespace Simulation
 
 
    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+   [DisableAutoCreation]
    // [UpdateAfter(typeof(ExportPhysicsWorld))]
    public class InputSystem : SystemBase
    {
@@ -47,6 +48,13 @@ namespace Simulation
          {
             Debug.Log("Input Warning!!! The time delta is greater than one network sim step!");
          }
+
+         // Debug.Log("Input At: " + World.Time.ElapsedTime + "  || " + timeDelta);
+
+
+         //ResourceManager.Instance.NetworkController.Log.
+
+
 
          // Debug.Log("Input System: " + World.Time.DeltaTime);
 
@@ -74,7 +82,7 @@ namespace Simulation
             if (linearVelocityMag > (sfloat).01f)
             {
                var normalizedLinearVelocity = vel.Linear / linearVelocityMag;
-               vel.Linear = normalizedLinearVelocity * math.min(linearVelocityMag, (sfloat)5);
+               vel.Linear = normalizedLinearVelocity * math.min(linearVelocityMag, (sfloat)15);
             }
 
          }).Run();

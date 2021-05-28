@@ -1,24 +1,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Beamable.Experimental.Api.Sim;
 using BeamableExtensions;
 using Simulation;
+using Unity.Entities;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 public class NetworkController : MonoBehaviour
 {
     private SimClient _sim;
     public string roomId;
-    // public int framesPerSecond = 20;
 
-    public float LastTickTime { get; set; }
-    public float TicksPerSecond { get; set; }
+    public static string roomIdOverride;
 
-    public Queue<Message> _messages;
-    public SimClient SimClient => _sim;
-
-    private float _lastUpdateTime;
+    public SimulationLog Log;
+    public long LocalDbid;
 
     // Start is called before the first frame update
     void Start()
@@ -26,43 +25,50 @@ public class NetworkController : MonoBehaviour
 
     }
 
-    public Queue<Message> Init()
-    {
-        if (_messages != null)
-        {
-            throw new InvalidOperationException("Cannot init the simulation twice.");
-        }
+    // void Awake()
+    // {
+    //     var world = World.All[0];
+    //     var fixedGroup = world.GetOrCreateSystem<FixedStepSimulationSystemGroup>();
+    //
+    //     var gameSystem = world.GetOrCreateSystem<GameSystem>();
+    //     var gameController = world.GetOrCreateSystem<GameController>();
+    //     var inputSystem = world.GetOrCreateSystem<InputSystem>();
+    //     var timeSystem = world.GetOrCreateSystem<SimWorldTimeSystem>();
+    //
+    //     // fixedGroup.AddSystemToUpdateList(gameSystem);
+    //     // fixedGroup.AddSystemToUpdateList(gameController);
+    //     // fixedGroup.AddSystemToUpdateList(inputSystem);
+    //     // fixedGroup.AddSystemToUpdateList(timeSystem);
+    //
+    //     // fixedGroup.SortSystems();
+    //     ScriptBehaviourUpdateOrder.UpdatePlayerLoop(world);
+    // }
 
-        _messages = new Queue<Message>();
+    public async Task Init()
+    {
+        Log = new SimulationLog();
+        roomId = string.IsNullOrEmpty(roomIdOverride) ? roomId : roomIdOverride;
+
+        var beamable = await Beamable.API.Instance;
+
+        LocalDbid = beamable.User.id;
         _sim = new SimClient(new SimNetworkEventStream(roomId), SimFixedRateManager.NetworkFramesPerSecond, 4);
         _sim.OnInit(HandleOnInit);
         _sim.OnConnect(HandleOnConnect);
         _sim.OnDisconnect(HandleOnDisconnect);
         _sim.OnTick(HandleOnTick);
-
-
-        return _messages;
     }
 
     private void HandleOnInit(string seed)
     {
         Debug.Log("Sim client has initialized " + seed);
-        LastTickTime = Time.realtimeSinceStartup;
         SimFixedRateManager.NetworkInitialized = true;
     }
 
     private void HandleOnTick(long tick)
     {
-        // SimFixedRateManager.AllowTick(tick);
-        _messages.Enqueue(new TickMessage(tick));
-
-        // SimFixedRateManager.AllowTick(tick);
-        // var t = Time.realtimeSinceStartup;
-        // var delta = t - LastTickTime;
-        // TicksPerSecond = delta;
-        // SharedInputData.timestep = (sfloat)TicksPerSecond;
-        // Debug.Log(tick + " - " + TicksPerSecond);
-        // LastTickTime = t;
+        SimFixedRateManager.AllowTick(tick);
+        Log.AddMessage(tick, new TickMessage(tick));
     }
 
     private void HandleOnConnect(string dbid)
@@ -71,18 +77,21 @@ public class NetworkController : MonoBehaviour
 
         // listen for messages from this player...
         var dbidNumber = long.Parse(dbid);
-        _sim.On<Message>("message", dbid, message =>
-        {
-            message.FromPlayer = dbidNumber;
-            Debug.Log("received sent message. " + message.Tick);
-            _messages.Enqueue(message);
-        });
 
-        _messages.Enqueue(new PlayerJoinedMessage
+        ListenForMessageFrom<PlayerSpawnCubeMessage>(dbid);
+        ListenForMessageFrom<PlayerDestroyAllMessage>(dbid);
+        // _sim.On<PlayerSpawnCubeMessage>(dbid, message =>
+        // {
+        //     Log.AddMessage(message);
+        // });
+        // _sim.On()
+
+        var joinMsg = new PlayerJoinedMessage
         {
             Tick = SimFixedRateManager.HighestSeenNetworkTick,
             FromPlayer = dbidNumber
-        });
+        };
+        Log.AddMessage(joinMsg);
     }
 
 
@@ -93,23 +102,26 @@ public class NetworkController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // var now = Time.realtimeSinceStartup;
-        // var nextUpdateAt = _lastUpdateTime + (SimFixedRateManager.NetworkFramesPerSecond);
-        // if (now > nextUpdateAt)
-        // {
-        //     _sim?.Update();
-        //     _lastUpdateTime = now;
-        // }
-        //
         _sim?.Update();
-
     }
 
     public void SendMessage(Message message)
     {
         message.Tick = SimFixedRateManager.HighestSeenNetworkTick + 1; // this message belongs on the next tick...
         Debug.Log("Sending message " + message.Tick);
-
-        _sim.SendEvent("message", message);
+        _sim.SendEvent(message.GetType().Name, message);
     }
+
+    SimClient.EventCallback<string> ListenForMessageFrom<T>(string origin)
+        where T : Message
+    {
+        var dbid = long.Parse(origin);
+        return _sim.On<T>(typeof(T).Name, origin, message =>
+        {
+            message.FromPlayer = dbid;
+            Log.AddMessage(message);
+            // callback(message);
+        });
+    }
+
 }

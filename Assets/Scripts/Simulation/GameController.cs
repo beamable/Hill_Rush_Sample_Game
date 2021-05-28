@@ -8,6 +8,7 @@ using UnityS.Transforms;
 
 namespace Simulation
 {
+    [DisableAutoCreation]
     public class GameController : SystemBase
     {
         public static GameController Instance;
@@ -19,6 +20,25 @@ namespace Simulation
 
         private Dictionary<(float3 size, UnityS.Physics.Material material), BlobAssetReference<UnityS.Physics.Collider>> boxColliders = new Dictionary<(float3 size, UnityS.Physics.Material material), BlobAssetReference<UnityS.Physics.Collider>>();
         private readonly List<ComponentType> componentTypes = new List<ComponentType>(20);
+
+        private PCG _rand = default;
+        private bool randInitialized = false;
+
+        public PCG Random
+        {
+            get
+            {
+                if (!randInitialized)
+                {
+                    _rand = new PCG(0, (ulong)ResourceManager.Instance.seed);
+                    randInitialized = true;
+                }
+
+                return _rand;
+            }
+        }
+
+
 
         protected override void OnCreate()
         {
@@ -32,8 +52,6 @@ namespace Simulation
             var systemGroup = World.GetOrCreateSystem<FixedStepSimulationSystemGroup>();
             systemGroup.Timestep = (float) (sfloat.One / (sfloat) 60.0f);
             systemGroup.World.MaximumDeltaTime = 100000;
-            var timeSystem = World.GetExistingSystem<UpdateWorldTimeSystem>();
-            World.DestroySystem(timeSystem); // don't allow time to ever move forward.
 
             // var fixedRateManager = new FixedRateUtils.FixedRateCatchUpManager()
            var fixedRateManager = new MyFixedRateCatchUpManager(systemGroup.Timestep);
@@ -66,16 +84,39 @@ namespace Simulation
                 new float3((sfloat) 500.0f, (sfloat) 2.0f, (sfloat) 500.0f), quaternion.identity, material,
                 physicsParamsStatic);
 
-            for (var i = 0f; i < 70; i++)
+            for (var i = 0f; i < 3; i++)
             {
 
                 var (renderer, entity) = CreateBoxColliderObject(ResourceManager.Instance.CubePrefab,
-                    new float3((sfloat)(-4 + i*.11f), (sfloat) (4 + (i*6)), (sfloat)4),
+                    new float3((sfloat)(-4 + i*.11f), (sfloat) (4 + (i*20)), (sfloat)2),
                     new float3(sfloat.One, sfloat.One, sfloat.One), quaternion.identity, material,
                     physicsParamsDynamic);
                 renderer.material = ResourceManager.Instance.colorMaterials[((int)i)%ResourceManager.Instance.colorMaterials.Length];
 
             }
+        }
+
+
+        public (MeshRenderer, Entity) SpawnCube(long colorIndex, float3 position)
+        {
+            Debug.Log("Spawning cube!");
+            UnityS.Physics.Material material = UnityS.Physics.Material.Default;
+            material.Friction = (sfloat)0.05f;
+
+            PhysicsParams physicsParams = PhysicsParams.Default;
+            physicsParams.isDynamic = true;
+
+            var direction = position / math.length(position);
+            physicsParams.startingLinearVelocity = -direction * Random.SFloatExclusive((sfloat)5, (sfloat)6); // launch towards center for now...
+            physicsParams.mass = (sfloat).25f;
+
+            var cube = GameController.Instance.CreateBoxColliderObject(ResourceManager.Instance.CubePrefab,
+                //new float3((sfloat)0, (sfloat)5, -(sfloat)2),
+                position,
+                new float3((sfloat)1f, (sfloat)1f, (sfloat)1f), quaternion.identity, material, physicsParams);
+
+            cube.Item1.material = ResourceManager.Instance.colorMaterials[(colorIndex)%ResourceManager.Instance.colorMaterials.Length];
+            return cube;
         }
 
 
@@ -150,6 +191,11 @@ namespace Simulation
             PhysicsParams physicsParams)
         {
             return CreatePhysicsBody(position, rotation, collider, physicsParams);
+        }
+
+        public void DestroyEntity(Entity entity)
+        {
+            EntityManager.DestroyEntity(entity);
         }
 
         public unsafe Entity CreatePhysicsBody(float3 position, quaternion orientation,

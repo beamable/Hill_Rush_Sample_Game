@@ -8,8 +8,16 @@ namespace Simulation
 {
    [Preserve]
    [UpdateInGroup(typeof(InitializationSystemGroup))]
-   public class SimWorldTimeSystem : ComponentSystem
+   [DisableAutoCreation]
+   public class SimWorldsTimeSystem : ComponentSystem
    {
+      protected override void OnCreate()
+      {
+         base.OnCreate();
+         World.SetTime(new TimeData(0, 0));
+
+      }
+
       protected override void OnUpdate()
       {
          var now = World.Time.ElapsedTime;

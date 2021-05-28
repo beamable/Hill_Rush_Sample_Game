@@ -110,7 +110,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerInput: {fileID: 6342760684246729563}
-  NetworkController: {fileID: 0}
+  angle: 0
+  rotationSpeed: 1
+  rotationRadius: 8
+  IsLocalPlayer: 0
+  Dbid: 0
+  needsToSendInput: 0
+  lastSeenTick: 0
+  consumerId: 0
 --- !u!114 &6342760684246729563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,4 +130,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 150ef98c49694c6a868f8e42aa7584bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Direction: {x: 0, y: 0}
   IsWalking: 0

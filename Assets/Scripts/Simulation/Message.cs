@@ -3,13 +3,29 @@ using System;
 namespace Simulation
 {
    [Serializable]
-   public class Message
+   public abstract class Message
    {
       public long Tick;
       public long FromPlayer;
-      public bool IsWalking;
-      public uint DirectionX;
-      public uint DirectionY;
+      // public bool IsWalking;
+      // public uint DirectionX;
+      // public uint DirectionY;
+
+      public bool Available { get; private set; } = true;
+      public void Consume()
+      {
+         Available = false;
+      }
+   }
+
+   public class PlayerSpawnCubeMessage : Message
+   {
+
+   }
+
+   public class PlayerDestroyAllMessage : Message
+   {
+
    }
 
    public class PlayerJoinedMessage : Message
