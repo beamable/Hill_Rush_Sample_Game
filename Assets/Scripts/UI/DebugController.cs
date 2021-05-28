@@ -38,6 +38,7 @@ namespace BeamableExtensions.UI
          var gameController = world.GetOrCreateSystem<GameController>();
          var gameSystem = world.GetOrCreateSystem<GameSystem>();
          var inputSystem = world.GetOrCreateSystem<InputSystem>();
+         var hashingSystem = world.GetOrCreateSystem<HashingSystem>();
 
          var initGroup = world.GetExistingSystem<InitializationSystemGroup>();
          var fixedGroup = world.GetExistingSystem<FixedStepSimulationSystemGroup>();
@@ -46,6 +47,7 @@ namespace BeamableExtensions.UI
          world.DestroySystem(gameController);
          world.DestroySystem(gameSystem);
          world.DestroySystem(inputSystem);
+         world.DestroySystem(hashingSystem);
 
          SimFixedRateManager.HighestSeenNetworkTick = 0;
          SimFixedRateManager.NetworkInitialized = false;
@@ -54,6 +56,7 @@ namespace BeamableExtensions.UI
          initGroup.RemoveSystemFromUpdateList(timeSystem);
          fixedGroup.RemoveSystemFromUpdateList(gameSystem);
          fixedGroup.RemoveSystemFromUpdateList(inputSystem);
+         fixedGroup.RemoveSystemFromUpdateList(hashingSystem);
 
          SceneManager.LoadScene("DebugJoin");
       }

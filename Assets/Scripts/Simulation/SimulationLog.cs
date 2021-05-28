@@ -14,6 +14,43 @@ namespace Simulation
       private Dictionary<int, Action<TimeUpdate>> _consumerIdToUpdater = new Dictionary<int, Action<TimeUpdate>>();
 
       private Dictionary<int, long> _consumerIdToTick = new Dictionary<int, long>();
+      private Dictionary<long, string> _tickToHash = new Dictionary<long, string>();
+
+      public bool HasHashForTick(long tick)
+      {
+         return _tickToHash.ContainsKey(tick);
+      }
+
+      public string GetHashForTick(long tick)
+      {
+         if (!HasHashForTick(tick))
+         {
+            throw new Exception("No hash has been calculated for tick " + tick);
+
+         }
+
+         return _tickToHash[tick];
+      }
+
+      public void ReportHashForTick(long tick, string hash)
+      {
+         _tickToHash[tick] = hash;
+      }
+
+      public void AssertHashMatches(long tick, string testHash)
+      {
+         if (!HasHashForTick(tick))
+         {
+            throw new Exception("No hash has been calculated for this tick");
+         }
+
+         var actualHash = _tickToHash[tick];
+         if (!Equals(actualHash, testHash))
+         {
+            Debug.LogWarning("HASH MISMATCH!!! FOR TICK " + tick);
+            // throw new Exception("Hash mismatch for tick " + tick);
+         }
+      }
 
       public IEnumerable<Message> GetMessagesForTick(long dbid, long tick)
       {

@@ -67,6 +67,12 @@ public class NetworkController : MonoBehaviour
 
     private void HandleOnTick(long tick)
     {
+        // if (tick > 100 && tick % 100 == 0)
+        // {
+        //     // send a hash check message...
+        //     SendMessage(new HashCheckMessage(Log.GetHashForTick(tick - 100), tick - 100));
+        // }
+
         SimFixedRateManager.AllowTick(tick);
         Log.AddMessage(tick, new TickMessage(tick));
     }
@@ -80,6 +86,15 @@ public class NetworkController : MonoBehaviour
 
         ListenForMessageFrom<PlayerSpawnCubeMessage>(dbid);
         ListenForMessageFrom<PlayerDestroyAllMessage>(dbid);
+        // ListenForMessageFrom<HashCheckMessage>(dbid);
+        _sim.On<HashCheckMessage>(nameof(HashCheckMessage), dbid, hashCheck =>
+        {
+            hashCheck.FromPlayer = dbidNumber;
+            Log.AssertHashMatches(hashCheck.ForTick, hashCheck.Hash);
+
+        });
+
+
         // _sim.On<PlayerSpawnCubeMessage>(dbid, message =>
         // {
         //     Log.AddMessage(message);

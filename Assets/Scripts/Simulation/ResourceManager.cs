@@ -55,6 +55,7 @@ namespace Simulation
          var gameController = world.GetOrCreateSystem<GameController>();
          var gameSystem = world.GetOrCreateSystem<GameSystem>();
          var inputSystem = world.GetOrCreateSystem<InputSystem>();
+         var hashingSystem = world.GetOrCreateSystem<HashingSystem>();
 
          var oldTime = world.GetExistingSystem<UpdateWorldTimeSystem>();
          if (oldTime != null)
@@ -70,6 +71,7 @@ namespace Simulation
          initGroup.RemoveSystemFromUpdateList(oldTime);
          fixedGroup.AddSystemToUpdateList(gameSystem);
          fixedGroup.AddSystemToUpdateList(inputSystem);
+         fixedGroup.AddSystemToUpdateList(hashingSystem);
 
          //world.AddSystem(gameController);
 

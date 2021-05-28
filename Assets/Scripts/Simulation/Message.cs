@@ -28,6 +28,17 @@ namespace Simulation
 
    }
 
+   public class HashCheckMessage : Message
+   {
+      public long ForTick;
+      public string Hash;
+      public HashCheckMessage(string hash, long forTick)
+      {
+         Hash = hash;
+         ForTick = forTick;
+      }
+   }
+
    public class PlayerJoinedMessage : Message
    {
       public PlayerJoinedMessage()
