@@ -50,6 +50,10 @@ namespace Simulation
             Debug.LogWarning("HASH MISMATCH!!! FOR TICK " + tick);
             // throw new Exception("Hash mismatch for tick " + tick);
          }
+         else
+         {
+            Debug.Log("Hash pass for tick: " + tick);
+         }
       }
 
       public IEnumerable<Message> GetMessagesForTick(long dbid, long tick)

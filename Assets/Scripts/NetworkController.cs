@@ -90,6 +90,8 @@ public class NetworkController : MonoBehaviour
         _sim.On<HashCheckMessage>(nameof(HashCheckMessage), dbid, hashCheck =>
         {
             hashCheck.FromPlayer = dbidNumber;
+            if (dbidNumber == LocalDbid) return;
+            Debug.Log("Validating hash from " + dbid + " for tick " + hashCheck.ForTick);
             Log.AssertHashMatches(hashCheck.ForTick, hashCheck.Hash);
 
         });
