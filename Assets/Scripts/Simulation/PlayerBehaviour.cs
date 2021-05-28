@@ -47,6 +47,20 @@ namespace Simulation
          IsLocalPlayer = ResourceManager.Instance.NetworkController.LocalDbid == dbid;
          consumerId = ResourceManager.Instance.NetworkController.Log.CreateNewConsumer(NetworkUpdate);
 
+
+         if (IsLocalPlayer)
+         {
+            ResourceManager.Instance.ShootButton.onClick.AddListener(() =>
+            {
+               needsToSendInput = true;
+               PlayerInput.SpawnRequest = true;
+            });
+            ResourceManager.Instance.ClearButton.onClick.AddListener(() =>
+            {
+               needsToSendInput = true;
+               PlayerInput.DeleteRequested = true;
+            });
+         }
       }
 
       void NetworkUpdate(TimeUpdate update)

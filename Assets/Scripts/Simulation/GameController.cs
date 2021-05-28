@@ -43,6 +43,7 @@ namespace Simulation
         protected override void OnCreate()
         {
             base.OnCreate();
+            Debug.Log("Creating Game Controller");
             Instance = this;
             UnityEngine.Physics.autoSimulation = false;
 
@@ -84,11 +85,12 @@ namespace Simulation
                 new float3((sfloat) 500.0f, (sfloat) 2.0f, (sfloat) 500.0f), quaternion.identity, material,
                 physicsParamsStatic);
 
-            for (var i = 0f; i < 3; i++)
+            var c = 400;
+            for (var i = 0f; i < c; i++)
             {
-
+                var x = ((sfloat)8) * math.cos((sfloat) (14 * (i/100f) * 3.14f));
                 var (renderer, entity) = CreateBoxColliderObject(ResourceManager.Instance.CubePrefab,
-                    new float3((sfloat)(-4 + i*.11f), (sfloat) (4 + (i*20)), (sfloat)2),
+                    new float3(x, (sfloat) (4 + (i*8)), (sfloat)2),
                     new float3(sfloat.One, sfloat.One, sfloat.One), quaternion.identity, material,
                     physicsParamsDynamic);
                 renderer.material = ResourceManager.Instance.colorMaterials[((int)i)%ResourceManager.Instance.colorMaterials.Length];

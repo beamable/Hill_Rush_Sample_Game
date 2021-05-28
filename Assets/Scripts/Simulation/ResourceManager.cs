@@ -1,6 +1,7 @@
 using System;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace Simulation
@@ -18,6 +19,8 @@ namespace Simulation
       public Material RealRandomMaterial => colorMaterials[Random.Range(0, colorMaterials.Length)];
 
       public int seed;
+
+      public Button ShootButton, ClearButton;
 
       private static ResourceManager _instance;
       public static ResourceManager Instance
