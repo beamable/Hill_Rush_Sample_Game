@@ -67,12 +67,6 @@ public class NetworkController : MonoBehaviour
 
     private void HandleOnTick(long tick)
     {
-        // if (tick > 100 && tick % 100 == 0)
-        // {
-        //     // send a hash check message...
-        //     SendMessage(new HashCheckMessage(Log.GetHashForTick(tick - 100), tick - 100));
-        // }
-
         SimFixedRateManager.AllowTick(tick);
         Log.AddMessage(tick, new TickMessage(tick));
     }
@@ -137,7 +131,6 @@ public class NetworkController : MonoBehaviour
         {
             message.FromPlayer = dbid;
             Log.AddMessage(message);
-            // callback(message);
         });
     }
 

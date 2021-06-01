@@ -41,6 +41,7 @@ namespace Simulation
       {
          if (!HasHashForTick(tick))
          {
+            // TODO: Put the tick+hash into a queue, and when we _do_ simulate that tick, check the hash...
             throw new Exception("No hash has been calculated for this tick");
          }
 
@@ -81,7 +82,7 @@ namespace Simulation
          return _nextConsumerId;
       }
 
-      public void NotifyUpdates(float elapsedTime, float deltaTime)
+      public void NotifyConsumers(float elapsedTime, float deltaTime)
       {
          var update = new TimeUpdate
          {

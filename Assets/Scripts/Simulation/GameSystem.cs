@@ -31,12 +31,12 @@ namespace Simulation
          var network = ResourceManager.Instance.NetworkController;
 
          var time = World.Time.ElapsedTime;
-         var tick = (long) (time * SimFixedRateManager.NetworkFramesPerSecond);
+         var frame = (long) (time * SimFixedRateManager.NetworkFramesPerSecond);
 
-         var messages = network.Log.GetMessagesForTick(tick).ToList();
+         var messages = network.Log.GetMessagesForTick(frame).ToList();
          // Debug.Log("Tick: " + tick + " has " + messages.Count);
 
-         network.Log.NotifyUpdates((float)time, (float)World.Time.DeltaTime);
+         network.Log.NotifyConsumers((float)time, (float)World.Time.DeltaTime);
 
          foreach (var message in messages)
          {

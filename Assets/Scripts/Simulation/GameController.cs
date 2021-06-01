@@ -55,7 +55,7 @@ namespace Simulation
             systemGroup.World.MaximumDeltaTime = 100000;
 
             // var fixedRateManager = new FixedRateUtils.FixedRateCatchUpManager()
-           var fixedRateManager = new MyFixedRateCatchUpManager(systemGroup.Timestep);
+            var fixedRateManager = new MyFixedRateCatchUpManager(systemGroup.Timestep);
             systemGroup.FixedRateManager = fixedRateManager;
             Entity physicsStep = EntityManager.CreateEntity(typeof(PhysicsStep));
             PhysicsStep physicsStepParams = PhysicsStep.Default;
