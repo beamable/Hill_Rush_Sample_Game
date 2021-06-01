@@ -67,7 +67,6 @@ namespace Simulation
       {
          angle += rotationSpeed * update.DeltaTime;
          transform.position = new Vector3(rotationRadius * Mathf.Cos(angle), 4, rotationRadius * Mathf.Sin(angle));
-
       }
 
       private void Update()
@@ -81,11 +80,11 @@ namespace Simulation
                needsToSendInput = false;
                if (PlayerInput.DeleteRequested)
                {
-                  ResourceManager.Instance.NetworkController.SendMessage(new PlayerDestroyAllMessage());
+                  ResourceManager.Instance.NetworkController.SendNetworkMessage(new PlayerDestroyAllMessage());
                   PlayerInput.DeleteRequested = false;
                } else if (PlayerInput.SpawnRequest)
                {
-                  ResourceManager.Instance.NetworkController.SendMessage(new PlayerSpawnCubeMessage());
+                  ResourceManager.Instance.NetworkController.SendNetworkMessage(new PlayerSpawnCubeMessage());
                   PlayerInput.SpawnRequest = false;
                }
 

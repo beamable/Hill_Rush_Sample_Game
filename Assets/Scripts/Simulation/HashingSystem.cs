@@ -68,7 +68,7 @@ namespace Simulation
          network.Log.ReportHashForTick(tick, hash);
          if (tick % 40 == 0) // every 2 seconds ish...
          {
-            network.SendMessage(new HashCheckMessage(hash, tick));
+            network.SendNetworkMessage(new HashCheckMessage(hash, tick));
          }
       }
    }

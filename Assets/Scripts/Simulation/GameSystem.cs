@@ -34,6 +34,13 @@ namespace Simulation
          {
             switch (message)
             {
+               case PlayerInputMessage inputMessage:
+                  var effectIn = (sfloat)time + sfloat.FromRaw(inputMessage.ForcedLagTime);
+                  var startTime = sfloat.FromRaw(inputMessage.StartWorldTime);
+                  var inputLag = (sfloat)time - startTime;
+                  Debug.Log("Got input message with lag of " + inputLag );
+                  inputMessage.Consume();
+                  break;
                case PlayerJoinedMessage join:
                   HandlePlayerJoin(join);
                   join.Consume();

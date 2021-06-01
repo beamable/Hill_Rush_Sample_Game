@@ -27,12 +27,21 @@ namespace BeamableExtensions.UI
          ElapsedTimeText.text = "ELAPSED: " + World.DefaultGameObjectInjectionWorld.Time.ElapsedTime;
          HashErrorText.text = "HASH ERROR: NO";
 
+
+         if (NetworkController.Log.TryGetValidHashTick(out var validTick))
+         {
+            HashErrorText.color = Color.green;
+            HashErrorText.text = "HASH ERROR: NO, VALIDATED TICK " + validTick;
+         }
+
          if (NetworkController.Log.TryGetInvalidHashTick(out var invalidTick))
          {
             // this is pretty much game over, because we don't support Rollback (yet)
             HashErrorText.color = Color.red;
             HashErrorText.text = "HASH ERROR: YES, AT TICK " + invalidTick;
          }
+
+
       }
 
       void HandleQuit()

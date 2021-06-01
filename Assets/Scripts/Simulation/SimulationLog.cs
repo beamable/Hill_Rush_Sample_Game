@@ -18,7 +18,8 @@ namespace Simulation
 
       private Dictionary<long, string> _pendingHashValidations = new Dictionary<long, string>();
 
-      private long firstInvalidHashAtFrame = -1;
+      private long latestInvalidFrame = -1;
+      private long latestValidFrame = -1;
 
       public bool HasHashForTick(long tick)
       {
@@ -27,7 +28,13 @@ namespace Simulation
 
       public bool TryGetInvalidHashTick(out long tick)
       {
-         tick = firstInvalidHashAtFrame;
+         tick = latestInvalidFrame;
+         return tick > -1;
+      }
+
+      public bool TryGetValidHashTick(out long tick)
+      {
+         tick = latestValidFrame;
          return tick > -1;
       }
 
@@ -73,12 +80,13 @@ namespace Simulation
          if (!Equals(actualHash, hash))
          {
             Debug.LogWarning("HASH MISMATCH!!! FOR TICK " + tick);
-            firstInvalidHashAtFrame = tick;
+            latestInvalidFrame = tick;
             return false;
          }
          else
          {
             Debug.Log("Hash pass for tick: " + tick);
+            latestValidFrame = tick;
             return true;
          }
       }

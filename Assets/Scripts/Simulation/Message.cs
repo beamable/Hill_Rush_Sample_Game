@@ -25,6 +25,30 @@ namespace Simulation
 
    }
 
+   public class PlayerInputMessage : Message
+   {
+      public uint XDirection;
+      public uint YDirection;
+      public uint Speed;
+
+      /// <summary>
+      /// The amount of time AFTER the start of the network frame, to the point when the input was started. f
+      /// </summary>
+      public uint ForcedLagTime;
+
+      public float Time;
+
+      public uint StartWorldTime;
+
+      public PlayerInputMessage(){}
+      public PlayerInputMessage(uint xDirection, uint yDirection, uint speed)
+      {
+         XDirection = xDirection;
+         YDirection = yDirection;
+         Speed = speed;
+      }
+   }
+
    public class HashCheckMessage : Message
    {
       public long ForTick;

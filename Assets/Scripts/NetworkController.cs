@@ -24,6 +24,8 @@ public class NetworkController : MonoBehaviour
     public static long HighestSeenNetworkFrame;
     public static bool NetworkInitialized;
 
+    public static float SimTime => HighestSeenNetworkFrame / (float)NetworkFramesPerSecond;
+
     public async Task Init()
     {
         HighestSeenNetworkFrame = 0;
@@ -60,15 +62,23 @@ public class NetworkController : MonoBehaviour
         // listen for messages from this player...
         var dbidNumber = long.Parse(dbid);
 
-        ListenForMessageFrom<PlayerSpawnCubeMessage>(dbid);
-        ListenForMessageFrom<PlayerDestroyAllMessage>(dbid);
-        _sim.On<HashCheckMessage>(nameof(HashCheckMessage), dbid, hashCheck =>
+        // ListenForMessageFrom<PlayerSpawnCubeMessage>(dbid);
+        // ListenForMessageFrom<PlayerDestroyAllMessage>(dbid);
+        // ListenForMessageFrom<PlayerInputMessage>(dbid);
+        _sim.On<PlayerInputMessage>(nameof(PlayerInputMessage), dbid, msg =>
         {
-            hashCheck.FromPlayer = dbidNumber;
-            if (dbidNumber == LocalDbid) return;
-            Debug.Log("Validating hash from " + dbid + " for tick " + hashCheck.ForTick);
-            Log.EnqueueHashAssertion(hashCheck.ForTick, hashCheck.Hash);
+            var time = Time.realtimeSinceStartup;
+            var startTime = msg.Time;
+            var dt = time - startTime;
+            Debug.Log("MESSAGE DELAY WAS " + dt);
         });
+        // _sim.On<HashCheckMessage>(nameof(HashCheckMessage), dbid, hashCheck =>
+        // {
+        //     hashCheck.FromPlayer = dbidNumber;
+        //     if (dbidNumber == LocalDbid) return;
+        //     Debug.Log("Validating hash from " + dbid + " for tick " + hashCheck.ForTick);
+        //     Log.EnqueueHashAssertion(hashCheck.ForTick, hashCheck.Hash);
+        // });
 
         var joinMsg = new PlayerJoinedMessage
         {
@@ -89,10 +99,10 @@ public class NetworkController : MonoBehaviour
         _sim?.Update();
     }
 
-    public void SendMessage(Message message)
+    public void SendNetworkMessage(Message message)
     {
-        message.Tick = HighestSeenNetworkFrame + 1; // this message belongs on the next tick...
-        Debug.Log("Sending message " + message.Tick);
+        // message.Tick = HighestSeenNetworkFrame + 1; // this message belongs on the next tick...
+        // Debug.Log("Sending message " + message.Tick);
         _sim.SendEvent(message.GetType().Name, message);
     }
 
