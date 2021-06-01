@@ -45,42 +45,10 @@ namespace Simulation
 
       private void Awake()
       {
+         Debug.Log("RESOURCE MANAGER AWAKE AND INIT");
          _instance = this;
          materialPropertyBlock = new MaterialPropertyBlock();
-
-
-         // create systems for game...
-         var world = World.DefaultGameObjectInjectionWorld;
-         var timeSystem = world.GetOrCreateSystem<SimWorldsTimeSystem>();
-         var gameController = world.GetOrCreateSystem<GameController>();
-         var gameSystem = world.GetOrCreateSystem<GameSystem>();
-         var inputSystem = world.GetOrCreateSystem<InputSystem>();
-         var hashingSystem = world.GetOrCreateSystem<HashingSystem>();
-
-         var oldTime = world.GetExistingSystem<UpdateWorldTimeSystem>();
-         if (oldTime != null)
-         {
-            world.DestroySystem(oldTime); // don't allow time to ever move forward.
-         }
-
-         var initGroup = world.GetExistingSystem<InitializationSystemGroup>();
-         var fixedGroup = world.GetExistingSystem<FixedStepSimulationSystemGroup>();
-
-         fixedGroup.AddSystemToUpdateList(gameController);
-         initGroup.AddSystemToUpdateList(timeSystem);
-         initGroup.RemoveSystemFromUpdateList(oldTime);
-         fixedGroup.AddSystemToUpdateList(gameSystem);
-         fixedGroup.AddSystemToUpdateList(inputSystem);
-         fixedGroup.AddSystemToUpdateList(hashingSystem);
-
-         //world.AddSystem(gameController);
-
-
-         initGroup.SortSystems();
-         fixedGroup.SortSystems();
-
-         // ScriptBehaviourUpdateOrder.Add
-         // ScriptBehaviourUpdateOrder.UpdatePlayerLoop(world);
+         SystemManager.StartGameSystems();
       }
    }
 

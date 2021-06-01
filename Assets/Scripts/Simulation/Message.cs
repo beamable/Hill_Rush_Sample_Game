@@ -5,13 +5,10 @@ namespace Simulation
    [Serializable]
    public abstract class Message
    {
-      public long Tick;
+      public long Tick; // TODO: Remove this. We don't _need_ it.
       public long FromPlayer;
-      // public bool IsWalking;
-      // public uint DirectionX;
-      // public uint DirectionY;
 
-      public bool Available { get; private set; } = true;
+      public bool Available { get; private set; } = true; // TODO: refactor "availability" into the sim log as a global consumer
       public void Consume()
       {
          Available = false;
@@ -49,7 +46,7 @@ namespace Simulation
 
    public class TickMessage : Message
    {
-      public long Tick;
+      public new long Tick;
       public TickMessage(long tick)
       {
          Tick = tick;

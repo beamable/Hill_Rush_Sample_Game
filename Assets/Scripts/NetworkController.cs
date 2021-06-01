@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Beamable;
 using Beamable.Experimental.Api.Sim;
 using BeamableExtensions;
 using Simulation;
@@ -19,40 +20,21 @@ public class NetworkController : MonoBehaviour
     public SimulationLog Log;
     public long LocalDbid;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // void Awake()
-    // {
-    //     var world = World.All[0];
-    //     var fixedGroup = world.GetOrCreateSystem<FixedStepSimulationSystemGroup>();
-    //
-    //     var gameSystem = world.GetOrCreateSystem<GameSystem>();
-    //     var gameController = world.GetOrCreateSystem<GameController>();
-    //     var inputSystem = world.GetOrCreateSystem<InputSystem>();
-    //     var timeSystem = world.GetOrCreateSystem<SimWorldTimeSystem>();
-    //
-    //     // fixedGroup.AddSystemToUpdateList(gameSystem);
-    //     // fixedGroup.AddSystemToUpdateList(gameController);
-    //     // fixedGroup.AddSystemToUpdateList(inputSystem);
-    //     // fixedGroup.AddSystemToUpdateList(timeSystem);
-    //
-    //     // fixedGroup.SortSystems();
-    //     ScriptBehaviourUpdateOrder.UpdatePlayerLoop(world);
-    // }
+    public const int NetworkFramesPerSecond = 20; // TODO: Un-hardcode this at the server level
+    public static long HighestSeenNetworkFrame;
+    public static bool NetworkInitialized;
 
     public async Task Init()
     {
+        HighestSeenNetworkFrame = 0;
+        NetworkInitialized = false;
         Log = new SimulationLog();
         roomId = string.IsNullOrEmpty(roomIdOverride) ? roomId : roomIdOverride;
 
-        var beamable = await Beamable.API.Instance;
+        var beamable = await API.Instance;
 
         LocalDbid = beamable.User.id;
-        _sim = new SimClient(new SimNetworkEventStream(roomId), SimFixedRateManager.NetworkFramesPerSecond, 4);
+        _sim = new SimClient(new SimNetworkEventStream(roomId), NetworkFramesPerSecond, 4);
         _sim.OnInit(HandleOnInit);
         _sim.OnConnect(HandleOnConnect);
         _sim.OnDisconnect(HandleOnDisconnect);
@@ -62,12 +44,12 @@ public class NetworkController : MonoBehaviour
     private void HandleOnInit(string seed)
     {
         Debug.Log("Sim client has initialized " + seed);
-        SimFixedRateManager.NetworkInitialized = true;
+        NetworkInitialized = true;
     }
 
     private void HandleOnTick(long tick)
     {
-        SimFixedRateManager.AllowTick(tick);
+        HighestSeenNetworkFrame = tick;
         Log.AddMessage(tick, new TickMessage(tick));
     }
 
@@ -80,26 +62,17 @@ public class NetworkController : MonoBehaviour
 
         ListenForMessageFrom<PlayerSpawnCubeMessage>(dbid);
         ListenForMessageFrom<PlayerDestroyAllMessage>(dbid);
-        // ListenForMessageFrom<HashCheckMessage>(dbid);
         _sim.On<HashCheckMessage>(nameof(HashCheckMessage), dbid, hashCheck =>
         {
             hashCheck.FromPlayer = dbidNumber;
             if (dbidNumber == LocalDbid) return;
             Debug.Log("Validating hash from " + dbid + " for tick " + hashCheck.ForTick);
-            Log.AssertHashMatches(hashCheck.ForTick, hashCheck.Hash);
-
+            Log.EnqueueHashAssertion(hashCheck.ForTick, hashCheck.Hash);
         });
-
-
-        // _sim.On<PlayerSpawnCubeMessage>(dbid, message =>
-        // {
-        //     Log.AddMessage(message);
-        // });
-        // _sim.On()
 
         var joinMsg = new PlayerJoinedMessage
         {
-            Tick = SimFixedRateManager.HighestSeenNetworkTick,
+            Tick = HighestSeenNetworkFrame,
             FromPlayer = dbidNumber
         };
         Log.AddMessage(joinMsg);
@@ -118,7 +91,7 @@ public class NetworkController : MonoBehaviour
 
     public void SendMessage(Message message)
     {
-        message.Tick = SimFixedRateManager.HighestSeenNetworkTick + 1; // this message belongs on the next tick...
+        message.Tick = HighestSeenNetworkFrame + 1; // this message belongs on the next tick...
         Debug.Log("Sending message " + message.Tick);
         _sim.SendEvent(message.GetType().Name, message);
     }

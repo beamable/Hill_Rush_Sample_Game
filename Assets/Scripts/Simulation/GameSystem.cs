@@ -16,25 +16,17 @@ namespace Simulation
       {
          base.OnCreate();
          var network = ResourceManager.Instance.NetworkController;
-         network.Init();
+         var _ = network.Init();
       }
 
       protected override void OnUpdate()
       {
-         var timeDelta = (sfloat)World.Time.DeltaTime;
-         if (timeDelta > (sfloat)(1/20f))
-         {
-            Debug.Log("Input Warning!!! The time delta is greater than one network sim step!");
-         }
-
          // get the tick this represents...
          var network = ResourceManager.Instance.NetworkController;
-
          var time = World.Time.ElapsedTime;
-         var frame = (long) (time * SimFixedRateManager.NetworkFramesPerSecond);
+         var frame = (long) (time * NetworkController.NetworkFramesPerSecond);
 
          var messages = network.Log.GetMessagesForTick(frame).ToList();
-         // Debug.Log("Tick: " + tick + " has " + messages.Count);
 
          network.Log.NotifyConsumers((float)time, (float)World.Time.DeltaTime);
 

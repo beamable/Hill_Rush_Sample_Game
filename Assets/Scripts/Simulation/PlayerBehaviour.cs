@@ -73,16 +73,7 @@ namespace Simulation
       private void Update()
       {
 
-         // rotate around in a circle
-         // TODO: Put this in a network time loop...
-         //
-         // var network = ResourceManager.Instance.NetworkController;
-         // foreach (var t in network.Log.GetTimeUpdates(consumerId))
-         // {
-
-
-
-         var currTick = SimFixedRateManager.HighestSeenNetworkTick;
+         var currTick = NetworkController.HighestSeenNetworkFrame;
          if (currTick != lastSeenTick)
          {
             if (IsLocalPlayer && needsToSendInput)

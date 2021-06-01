@@ -39,6 +39,11 @@ namespace Simulation
         }
 
 
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            Instance = null;
+        }
 
         protected override void OnCreate()
         {
@@ -54,8 +59,7 @@ namespace Simulation
             systemGroup.Timestep = (float) (sfloat.One / (sfloat) 60.0f);
             systemGroup.World.MaximumDeltaTime = 100000;
 
-            // var fixedRateManager = new FixedRateUtils.FixedRateCatchUpManager()
-            var fixedRateManager = new MyFixedRateCatchUpManager(systemGroup.Timestep);
+            var fixedRateManager = new UnboundedFixedRateCatchUpManager(systemGroup.Timestep);
             systemGroup.FixedRateManager = fixedRateManager;
             Entity physicsStep = EntityManager.CreateEntity(typeof(PhysicsStep));
             PhysicsStep physicsStepParams = PhysicsStep.Default;
@@ -85,7 +89,7 @@ namespace Simulation
                 new float3((sfloat) 500.0f, (sfloat) 2.0f, (sfloat) 500.0f), quaternion.identity, material,
                 physicsParamsStatic);
 
-            var c = 400;
+            var c = 50;
             for (var i = 0f; i < c; i++)
             {
                 var x = ((sfloat)8) * math.cos((sfloat) (14 * (i/100f) * 3.14f));
@@ -126,10 +130,6 @@ namespace Simulation
         {
             Entities.ForEach((ref Entity e, ref Translation t, ref Rotation r, ref PhysicsMass mass, ref PhysicsVelocity _vel) =>
             {
-                // _vel.ApplyLinearImpulse(mass, new float3((sfloat).01f, (sfloat)0, (sfloat)0));
-                // update object transforms, based on ECS data
-                // Debug.Log("UPDATE " + e.Index + " " + _vel.Linear.x);
-
                 if (objects.TryGetValue(e, out GameObject obj))
                 {
                     obj.transform.localPosition = (Vector3)t.Value;
@@ -177,17 +177,6 @@ namespace Simulation
             objects.Add(entity, obj.gameObject);
             return (obj, entity);
         }
-
-        public void ApplyImpulse(Entity entity, in float3 impulse)
-        {
-            // EntityManager.AddComponent<MoveForceData>(entity)
-            // EntityManager.SetComponentData(entity, new MoveForceData
-            // {
-            //     Magnitude = (sfloat)1,
-            //     Direction = new float2()
-            // });
-        }
-
 
         public Entity CreateEntity(float3 position, quaternion rotation, BlobAssetReference<UnityS.Physics.Collider> collider,
             PhysicsParams physicsParams)

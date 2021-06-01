@@ -16,9 +16,19 @@ namespace Simulation
       private Dictionary<int, long> _consumerIdToTick = new Dictionary<int, long>();
       private Dictionary<long, string> _tickToHash = new Dictionary<long, string>();
 
+      private Dictionary<long, string> _pendingHashValidations = new Dictionary<long, string>();
+
+      private long firstInvalidHashAtFrame = -1;
+
       public bool HasHashForTick(long tick)
       {
          return _tickToHash.ContainsKey(tick);
+      }
+
+      public bool TryGetInvalidHashTick(out long tick)
+      {
+         tick = firstInvalidHashAtFrame;
+         return tick > -1;
       }
 
       public string GetHashForTick(long tick)
@@ -35,25 +45,41 @@ namespace Simulation
       public void ReportHashForTick(long tick, string hash)
       {
          _tickToHash[tick] = hash;
+         if (_pendingHashValidations.TryGetValue(tick, out var pendingAssertHash))
+         {
+            AssertHash(tick, pendingAssertHash);
+            _pendingHashValidations.Remove(tick);
+         }
       }
 
-      public void AssertHashMatches(long tick, string testHash)
+      public void EnqueueHashAssertion(long tick, string hash)
       {
          if (!HasHashForTick(tick))
          {
-            // TODO: Put the tick+hash into a queue, and when we _do_ simulate that tick, check the hash...
-            throw new Exception("No hash has been calculated for this tick");
+            if (_pendingHashValidations.ContainsKey(tick))
+            {
+               throw new Exception("There is already a pending hash validation for tick " + tick);
+            }
+            _pendingHashValidations.Add(tick, hash);
+            return;
          }
 
+         AssertHash(tick, hash);
+      }
+
+      public bool AssertHash(long tick, string hash)
+      {
          var actualHash = _tickToHash[tick];
-         if (!Equals(actualHash, testHash))
+         if (!Equals(actualHash, hash))
          {
             Debug.LogWarning("HASH MISMATCH!!! FOR TICK " + tick);
-            // throw new Exception("Hash mismatch for tick " + tick);
+            firstInvalidHashAtFrame = tick;
+            return false;
          }
          else
          {
             Debug.Log("Hash pass for tick: " + tick);
+            return true;
          }
       }
 
@@ -128,13 +154,13 @@ namespace Simulation
 
       public IEnumerable<TimeUpdate> GetTimeUpdates(int consumerId)
       {
-         var tick = SimFixedRateManager.HighestSeenNetworkTick;
+         var tick = NetworkController.HighestSeenNetworkFrame;
          var seenTick = _consumerIdToTick[consumerId];
-         var timestep = 1f / SimFixedRateManager.NetworkFramesPerSecond;
+         var timestep = 1f / NetworkController.NetworkFramesPerSecond;
 
          for (var t = seenTick + 1; t <= tick; t++)
          {
-            var elapsedTime = t / (float)SimFixedRateManager.NetworkFramesPerSecond;
+            var elapsedTime = t / (float)NetworkController.NetworkFramesPerSecond;
 
             var messages = GetMessagesForTick(t, consumerId).ToList();
             yield return new TimeUpdate

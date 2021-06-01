@@ -21,8 +21,8 @@ namespace Simulation
       protected override void OnUpdate()
       {
          var now = World.Time.ElapsedTime;
-         var secondsPerFrame = 1 / (float) SimFixedRateManager.NetworkFramesPerSecond;
-         var simTime = SimFixedRateManager.HighestSeenNetworkTick * secondsPerFrame;
+         var secondsPerFrame = 1 / (float) NetworkController.NetworkFramesPerSecond;
+         var simTime = NetworkController.HighestSeenNetworkFrame * secondsPerFrame;
          var maxTime = simTime + secondsPerFrame * 1; // we can simulate the current network tick into the future.
 
          var useCatchUp = true;

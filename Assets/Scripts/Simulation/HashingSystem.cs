@@ -45,10 +45,10 @@ namespace Simulation
          // get the tick this represents...
          var network = ResourceManager.Instance.NetworkController;
 
-         if (!SimFixedRateManager.NetworkInitialized) return;
+         if (!NetworkController.NetworkInitialized) return;
 
          var time = World.Time.ElapsedTime;
-         var tick = (long) (time * SimFixedRateManager.NetworkFramesPerSecond);
+         var tick = (long) (time * NetworkController.NetworkFramesPerSecond);
 
          if (network.Log.HasHashForTick(tick)) return; // don't do anything...
 

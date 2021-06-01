@@ -24,49 +24,26 @@ namespace Simulation
          _entityMoveTable[e] = data;
       }
 
-
-
-
    }
 
 
    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
    [DisableAutoCreation]
-   // [UpdateAfter(typeof(ExportPhysicsWorld))]
    public class InputSystem : SystemBase
    {
       protected override void OnUpdate()
       {
-         // The time
-         // World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = (float)SharedInputData.timestep;
-
-
-         // we can't consume inputs when the time period might be skipped...
-
          var timeDelta = (sfloat)World.Time.DeltaTime;
-         if (timeDelta > (sfloat)(1/20f))
-         {
-            Debug.Log("Input Warning!!! The time delta is greater than one network sim step!");
-         }
 
-         // Debug.Log("Input At: " + World.Time.ElapsedTime + "  || " + timeDelta);
-
-
-         //ResourceManager.Instance.NetworkController.Log.
-
-
-
-         // Debug.Log("Input System: " + World.Time.DeltaTime);
-
-         var moveTable = SharedInputData._entityMoveTable;
+         // var moveTable = SharedInputData._entityMoveTable;
          Entities.WithoutBurst().ForEach((Entity e, ref PhysicsVelocity vel, ref PhysicsMass mass, ref MoveForceData move) =>
          {
-            if (moveTable.TryGetValue(e, out var nextMove))
-            {
-               move.X = nextMove.X;
-               move.Direction = nextMove.Direction;
-               move.Magnitude = nextMove.Magnitude;
-            }
+            // if (moveTable.TryGetValue(e, out var nextMove))
+            // {
+            //    move.X = nextMove.X;
+            //    move.Direction = nextMove.Direction;
+            //    move.Magnitude = nextMove.Magnitude;
+            // }
 
             var impulse = new float3(
                x: move.Direction.x,
